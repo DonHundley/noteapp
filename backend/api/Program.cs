@@ -1,7 +1,11 @@
 using Serilog;
 using System;
+using System.Reflection;
 using System.Text.Json;
 using api;
+using api.Helpers;
+using api.ServerEvents;
+using api.State;
 using Fleck;
 using lib;
 using MySql.Data.MySqlClient;
@@ -27,12 +31,15 @@ namespace api
             }));
 
             var builder = WebApplication.CreateBuilder();
-
-            string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             
-            builder.Services.AddTransient<MySqlConnection>(_ => new MySqlConnection(connectionString));
+            // create our repository singleton
+            string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            builder.Services.AddSingleton<NoteRepository>(_ => new NoteRepository(connectionString!));
 
+            var services = builder.FindAndInjectClientEventHandlers(Assembly.GetExecutingAssembly());
+            
             var app = builder.Build();
+            
             
             
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("Not found");
@@ -46,9 +53,24 @@ namespace api
             
             server.Start(socket =>
             {
-                socket.OnOpen = () => { Console.WriteLine("Socket opened"); };
-                socket.OnClose = () => { Console.WriteLine("Socket closed"); };
-                socket.OnMessage = message => { Console.WriteLine($"Received message: {message}"); };
+                socket.OnOpen = () => WebSocketStateService.AddClient(socket.ConnectionInfo.Id, socket);
+                socket.OnClose = () => WebSocketStateService.RemoveClient(socket.ConnectionInfo.Id);
+                socket.OnMessage = async message =>
+                {
+                    try
+                    {
+                        await app.InvokeClientEventHandler(services, socket, message);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e, "Global exeception handler");
+                        socket.SendDto(new ServerSendsErrorMessageToClient
+                        {
+                            errorMessage = e.Message,
+                            receivedMessage = message
+                        });
+                    }
+                };
             });
 
             return app;
