@@ -11,6 +11,7 @@ namespace api.State;
 public class WsWithMetadata(IWebSocketConnection connection)
 {
     public IWebSocketConnection Connection { get; set; } = connection;
+    public Journalist? Journalist { get; set; }
 }
 
 public class WebSocketStateService
@@ -21,8 +22,7 @@ public class WebSocketStateService
     private static readonly Dictionary<Guid, HashSet<SubjectEnums>> _clientSubjects = new();
     // Dictionary that is used to track which clients are subscribed to which subject
     private static readonly Dictionary<SubjectEnums, HashSet<Guid>> _subjectClients = new();
-    // Dictionary of subjects where notes will be posted
-    private static readonly Dictionary<SubjectEnums, List<Note>> _subjects = new();
+    
     
     // Add a client to the dictionary
     public static void AddClient(Guid clientId, IWebSocketConnection connection)
@@ -42,8 +42,7 @@ public class WebSocketStateService
     // Get a client by ID from the dictionary
     public static WsWithMetadata GetClient(Guid clientId)
     {
-        _clients.TryGetValue(clientId, out var client);
-        return client;
+        return _clients[clientId];
     }
     
     // get clients subscribed to a subject
