@@ -9,6 +9,9 @@ services:
       - "5000:5000"
     depends_on:
       - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - PORT=8181
 
   db:
     image: mysql:8.0.19

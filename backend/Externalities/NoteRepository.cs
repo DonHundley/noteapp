@@ -1,28 +1,39 @@
 using Dapper;
+using Externalities.ParameterModels;
 using Externalities.QueryModels;
-using MySql.Data.MySqlClient; 
+using MySql.Data.MySqlClient;
 
+namespace Externalities;
 
-
-public class NoteRepository
+public class NoteRepository(string connectionString)
 {
-    private readonly string _connectionString;
-
-    public NoteRepository(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
-
     private MySqlConnection GetOpenConnection()
     {
-        var connection = new MySqlConnection(_connectionString);
+        var connection = new MySqlConnection(connectionString);
         connection.Open();
         return connection;
     }
     
+    
+    public IEnumerable<Note> GetNotesBySubject(GetNotesParams getNotesParams)
+    {
+        using var connection = GetOpenConnection();
+        return connection.Query<Note>($@"
+SELECT 
+    notecontent as {nameof(Note.noteContent)},
+    sender as {nameof(Note.sender)},
+    id as {nameof(Note.id)}, 
+    timestamp as {nameof(Note.timestamp)}, 
+    subject as {nameof(Note.subjectId)} 
+FROM journal.notes 
+join journal.journalist on journal.notes.sender = journal.journalist.id 
+where journal.notes.id<@{{nameof(GetNotesParams.lastNoteId)}} and subject=@{{nameof(getPastMessageParams.subject)}} 
+ORDER BY timestamp DESC;", getNotesParams);
+    }
+    
     public async Task Add(Note note)
     {
-        const string sql = "INSERT INTO Notes(Content, Topic) VALUES(@Content, @Topic);";
+        const string sql = "INSERT INTO Notes(Content, Subject) VALUES(@Content, @Topic);";
 
         using var connection = GetOpenConnection();
         
@@ -41,7 +52,7 @@ public class NoteRepository
 
     public async Task Update(Note note)
     {
-        const string sql = "UPDATE Notes SET Content = @Content, Topic = @Topic WHERE Id = @Id;";
+        const string sql = "UPDATE Notes SET Content = @Content, Subject = @Subject WHERE Id = @Id;";
 
         using var connection = GetOpenConnection();
 

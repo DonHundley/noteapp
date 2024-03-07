@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "api", "api\api.csproj", "{6
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Externalities", "Externalities\Externalities.csproj", "{49ADA1FB-D086-481A-839F-51E4BE2DC639}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsBE", "TestsBE\TestsBE.csproj", "{B82DD20F-4830-446F-81D0-0667BBB2C400}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{49ADA1FB-D086-481A-839F-51E4BE2DC639}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49ADA1FB-D086-481A-839F-51E4BE2DC639}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49ADA1FB-D086-481A-839F-51E4BE2DC639}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B82DD20F-4830-446F-81D0-0667BBB2C400}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B82DD20F-4830-446F-81D0-0667BBB2C400}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B82DD20F-4830-446F-81D0-0667BBB2C400}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B82DD20F-4830-446F-81D0-0667BBB2C400}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
