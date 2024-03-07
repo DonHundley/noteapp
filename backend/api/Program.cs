@@ -26,8 +26,8 @@ namespace api
                 WriteIndented = true
             }));
 
+            
             var builder = WebApplication.CreateBuilder();
-
             string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             
             builder.Services.AddTransient<MySqlConnection>(_ => new MySqlConnection(connectionString));
