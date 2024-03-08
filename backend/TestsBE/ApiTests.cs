@@ -5,6 +5,7 @@ using api.Models.Enums;
 using api.ServerEvents;
 using lib;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
+using NUnit.Framework;
 
 namespace TestsBE;
 [TestFixture]
@@ -22,23 +23,33 @@ public class ApiTests
     {
         var ws = await new WebSocketTestClient().ConnectAsync();
 
+        await ws.DoAndAssert(new ClientWantsToJournalDto()
+        {
+            username = "test_username"
+        }, message =>
+        {
+            return message.Count(e => e.eventType == nameof(ServerAddedJournalist)) == 1;
+        });
+
         await ws.DoAndAssert(new ClientWantsToSubscribeToSubjectDto()
         {
             subjectId = 1
-        }, receivedMessages =>
+        }, message =>
         {
-            return receivedMessages.Count(e => e.eventType == nameof(ServerSubscribesClientToSubject)) == 1;
+            return message.Count(e => e.eventType == nameof(ServerSubscribesClientToSubject)) == 1;
         });
         
-        Console.Write("passed 1");
+        // client wants to put a note in their subscribed subject
         await ws.DoAndAssert(new ClientWantsToCreateNoteDto()
-        {
-            messageContent = "Test message",
-            subjectId = 1
-        }, receivedMessages =>
-        {
-            return receivedMessages.Count(e => e.eventType == nameof(ServerAddsNoteToSubject)) == 1;
-        });
+            {
+                messageContent = "test_message",
+                subjectId = 1
+            },
+            message =>
+            {
+                return message.Count(e => e.eventType == nameof(ServerAddsNoteToSubject)) == 1;
+            });
+        
         
         ws.Client.Dispose();
     }
