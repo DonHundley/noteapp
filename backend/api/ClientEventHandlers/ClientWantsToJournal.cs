@@ -10,7 +10,7 @@ namespace api.ClientEventHandlers;
 
 public class ClientWantsToJournalDto : BaseDto
 {
-    public string username { get; set; }
+    public string? username { get; set; }
     
 }
 
@@ -20,9 +20,10 @@ public class ClientWantsToJournal(JournalistRepository journalistRepository) : B
     {
         var journalist = journalistRepository.AddJournalist(new AddJournalistParams(dto.username));
         WebSocketStateService.GetClient(socket.ConnectionInfo.Id).Journalist = journalist;
+        Console.WriteLine(WebSocketStateService.GetClient(socket.ConnectionInfo.Id).Journalist);
         socket.SendDto(new ServerAddedJournalist
         {
-            message = $"Journalist {journalist.username} added successfully."
+            message = "Welcome!"
         });
         return Task.CompletedTask;
     }
