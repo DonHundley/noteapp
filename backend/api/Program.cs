@@ -1,8 +1,5 @@
 using Serilog;
-using System;
 using System.Reflection;
-using System.Text.Json;
-using api;
 using api.Exceptions;
 using api.Helpers;
 using api.ServerEvents;
@@ -10,7 +7,6 @@ using api.State;
 using Externalities;
 using Fleck;
 using lib;
-using MySql.Data.MySqlClient;
 
 
 
@@ -38,13 +34,13 @@ public static class Startup
         var builder = WebApplication.CreateBuilder(args);
         
         // create our repository singleton
-        string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-        builder.Services.AddSingleton<RepositoryManagement>(_ => new RepositoryManagement(connectionString!));
-        builder.Services.AddSingleton<NoteRepository>(_ => new NoteRepository(connectionString!));
-    
+        string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException();
+        builder.Services.AddSingleton<RepositoryManagement>(_ => new RepositoryManagement(connectionString));
+        builder.Services.AddSingleton<NoteRepository>(_ => new NoteRepository(connectionString));
+        builder.Services.AddSingleton<JournalistRepository>(_ => new JournalistRepository(connectionString));
         var services = builder.FindAndInjectClientEventHandlers(Assembly.GetExecutingAssembly());
 
-        builder.WebHost.UseUrls("http://*:9999");
+        builder.WebHost.UseUrls("http://*:5142");
         var app = builder.Build();
         var port = Environment.GetEnvironmentVariable(ENV_VAR_KEYS.PORT.ToString()) ?? "8181";
         var server = new WebSocketServer("ws://0.0.0.0:8181");
@@ -73,22 +69,30 @@ public static class Startup
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e, "Global exeception handler");
-                    if (e is InvalidEnumValueException)
+                    Log.Error(e, "Global exception handler");
+                    switch (e)
                     {
-                        socket.SendDto(new ServerSendsErrorMessageToClient()
-                        {
-                            errorMessage = "Invalid enum value, subject does not exist.",
-                            receivedMessage = message
-                        });
-                    }
-                    else
-                    {
-                        socket.SendDto(new ServerSendsErrorMessageToClient
-                        {
-                            errorMessage = e.Message,
-                            receivedMessage = message
-                        });
+                        case InvalidEnumValueException:
+                            socket.SendDto(new ServerSendsErrorMessageToClient()
+                            {
+                                errorMessage = "Invalid enum value, subject does not exist.",
+                                receivedMessage = message
+                            });
+                            break;
+                        case InvalidOperationException:
+                            socket.SendDto(new ServerSendsErrorMessageToClient()
+                            {
+                                errorMessage = "There has been an issue communicating with the database.",
+                                receivedMessage = message
+                            });
+                            break;
+                        default:
+                            socket.SendDto(new ServerSendsErrorMessageToClient
+                            {
+                                errorMessage = e.Message,
+                                receivedMessage = message
+                            });
+                            break;
                     }
                 }
             };

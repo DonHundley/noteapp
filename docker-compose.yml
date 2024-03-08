@@ -6,12 +6,11 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "8181:8181"
-      - "5000:5000"
     depends_on:
       - db
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - PORT=8181
+      - ASPNETCORE_URLS=http://+:5142
 
   db:
     image: mysql:8.0.19
