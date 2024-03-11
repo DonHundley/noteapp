@@ -1,4 +1,7 @@
+using System.ComponentModel.DataAnnotations;
+using api.EventFilters;
 using api.Helpers;
+using api.Security;
 using api.ServerEvents;
 using api.State;
 using Externalities;
@@ -10,11 +13,15 @@ namespace api.ClientEventHandlers;
 
 public class ClientWantsToJournalDto : BaseDto
 {
-    public string? username { get; set; }
+    [MinLength(6)] string? username { get; set; }
+    [MinLength(8)] public string password { get; set; }
     
 }
-
-public class ClientWantsToJournal(JournalistRepository journalistRepository) : BaseEventHandler<ClientWantsToJournalDto>
+[AuthValidation]
+public class ClientWantsToJournal(
+    JournalistRepository journalistRepository,
+    CredentialService credentialService,
+    TokenService tokenService) : BaseEventHandler<ClientWantsToJournalDto>
 {
     public override Task Handle(ClientWantsToJournalDto dto, IWebSocketConnection socket)
     {

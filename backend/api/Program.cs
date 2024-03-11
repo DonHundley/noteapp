@@ -17,8 +17,16 @@ public static class Startup
 
     public static void Main(string[] args)
     {
-        var webApp = Start(args);
-        webApp.Run();
+        try 
+        {
+            var webApp = Start(args);
+            webApp.Run();
+        }
+        catch (MySql.Data.MySqlClient.MySqlException e)
+        {
+            throw new InvalidDatabaseSettingsException(
+                "Either the database isn't running or the credentials are incorrect!", e);
+        }
     }
     
     public static WebApplication Start(string[] args)
@@ -79,16 +87,25 @@ public static class Startup
                                 receivedMessage = message
                             });
                             break;
-                        case InvalidOperationException:
+                        case InvalidDatabaseSettingsException:
                             socket.SendDto(new ServerSendsErrorMessageToClient()
                             {
                                 errorMessage = "There has been an issue communicating with the database.",
                                 receivedMessage = message
                             });
                             break;
+                        case SubException:
+                            socket.SendDto(new ServerSendsErrorMessageToClient()
+                            {
+                                errorMessage = "You are not subscribed to the subject you are contributing to!",
+                                receivedMessage = message
+                            });
+                            break;
                         default:
                             socket.SendDto(new ServerSendsErrorMessageToClient
                             {
+                                // This shouldn't be called, I'm a flawless programmer and considered all possible exceptions. 
+                                // but just in case, you never know. ¯\_(ツ)_/¯
                                 errorMessage = e.Message,
                                 receivedMessage = message
                             });

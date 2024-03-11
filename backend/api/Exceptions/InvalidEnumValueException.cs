@@ -1,5 +1,6 @@
 namespace api.Exceptions;
 
+// exception for enums
 public class InvalidEnumValueException : Exception
 {
     public InvalidEnumValueException()
