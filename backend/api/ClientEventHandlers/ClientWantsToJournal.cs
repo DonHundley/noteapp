@@ -13,11 +13,13 @@ namespace api.ClientEventHandlers;
 
 public class ClientWantsToJournalDto : BaseDto
 {
-    [MinLength(6)] string? username { get; set; }
+    [MinLength(6)] public string username { get; set; }
     [MinLength(8)] public string password { get; set; }
     
 }
+
 [AuthValidation]
+[DataValidation]
 public class ClientWantsToJournal(
     JournalistRepository journalistRepository,
     CredentialService credentialService,
@@ -25,12 +27,24 @@ public class ClientWantsToJournal(
 {
     public override Task Handle(ClientWantsToJournalDto dto, IWebSocketConnection socket)
     {
-        var journalist = journalistRepository.AddJournalist(new AddJournalistParams(dto.username));
-        WebSocketStateService.GetClient(socket.ConnectionInfo.Id).Journalist = journalist;
-        Console.WriteLine(WebSocketStateService.GetClient(socket.ConnectionInfo.Id).Journalist);
-        socket.SendDto(new ServerAddedJournalist
+        if (journalistRepository.DoesUsernameExist(new FindByUserParams(dto.username)))
         {
-            message = "Welcome!"
+            throw new ValidationException("Username is taken");
+        }
+        
+        
+        var salt = credentialService.GenerateSalt();
+        var hash = credentialService.Hash(dto.password, salt);
+        var journalist =
+            journalistRepository.AddJournalist(new AddJournalistParams(dto.username, hash,
+                salt));
+        var issuedToken = tokenService.IssueToken(journalist);
+        WebSocketStateService.GetClient(socket.ConnectionInfo.Id).Authorized = true;
+        WebSocketStateService.GetClient(socket.ConnectionInfo.Id).Journalist = journalist;
+        
+        socket.SendDto(new ServerAuthenticatesJournalist()
+        {
+            token = issuedToken
         });
         return Task.CompletedTask;
     }

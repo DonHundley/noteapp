@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reactive.Subjects;
+using api.EventFilters;
 using api.Exceptions;
 using api.Helpers;
 using api.Models.Enums;
@@ -10,15 +11,18 @@ using Externalities.ParameterModels;
 using Externalities.QueryModels;
 using Fleck;
 using lib;
+using Serilog;
+
 namespace api.ClientEventHandlers;
 
 public class ClientWantsToCreateNoteDto : BaseDto
 {
-   [Required] [MinLength(1)] [MaxLength(255)] public string? messageContent { get; set; } 
+   [Required] [MinLength(1)] [MaxLength(250)] public string? messageContent { get; set; } 
    
    [Required] public int subjectId { get; set; }
 }
-
+[AuthValidation]
+[DataValidation]
 public class ClientWantsToCreateNote(NoteRepository noteRepository) : BaseEventHandler<ClientWantsToCreateNoteDto>
 {
    public override Task Handle(ClientWantsToCreateNoteDto dto, IWebSocketConnection socket)
@@ -26,9 +30,10 @@ public class ClientWantsToCreateNote(NoteRepository noteRepository) : BaseEventH
       
       
       // is the subject valid?
-      // shouldn't be needed as we are moderating this in our dto as well.
+      // We are checking this here because if more subjects are added I want this to be flexible
       if (!WebSocketStateService.IsValidSubject(dto.subjectId))
       {
+         
          throw new InvalidEnumValueException("There is not a subject for that SubjectId!");
       }
       // are they subscribed to the subject?
