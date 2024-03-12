@@ -29,14 +29,40 @@ FROM notes n
 JOIN journalist j ON n.sender = j.id 
 WHERE n.id < @{nameof(GetNotesParams.lastNoteId)} AND 
       n.subjectId = @{nameof(GetNotesParams.subjectId)}
-ORDER BY n.timestamp DESC;", getNotesParams);
+ORDER BY n.timestamp DESC;", getNotesParams); 
     }
 
-    public async Task Add(Note note)
+
+
+    public async Task<Note> Add(CreateNoteParams createParams)
     {
-        const string sql = "INSERT INTO Notes(Content, Subject) VALUES(@Content, @Topic);";
-        using var connection = GetOpenConnection();
-        await connection.ExecuteAsync(sql, note);
+        const string sql = @"
+INSERT INTO db.notes(noteContent, timestamp, subjectId, sender) 
+VALUES(@noteContent, @timestamp, @subjectId, @sender);
+SELECT LAST_INSERT_ID();";
+
+        try
+        {
+            using var connection = GetOpenConnection();
+            int id = await connection.ExecuteAsync(sql, createParams);
+    
+            var newNote = new Note
+            {
+                id = id,
+                noteContent = createParams.noteContent,
+                timestamp = createParams.timestamp,
+                subjectId = createParams.subjectId,
+                sender = createParams.sender
+            };
+
+            return newNote;
+        }
+        catch(Exception ex)
+        {
+            // Log exception and rethrow
+            //Log.Error(ex, "Exception occurred in Add method");
+            throw;
+        }
     }
 
     public async Task<Note> Get(int id)

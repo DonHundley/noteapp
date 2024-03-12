@@ -19,16 +19,32 @@ public class ApiTests
     }
 
     [Test]
+    public async Task ClientWantsToJournal()
+    {
+        var ws = await new WebSocketTestClient().ConnectAsync();
+        
+        await ws.DoAndAssert(new ClientWantsToJournalDto() { username = "Journalist1", password = "password" },
+            message =>
+            {
+                return message.Count(e => e.eventType == nameof(ServerAuthenticatesJournalist)) == 1;
+            });
+        
+        ws.Client.Dispose();
+    }
+    
+    
+    [Test]
     public async Task ClientCanPublishNoteToSubject()
     {
         var ws = await new WebSocketTestClient().ConnectAsync();
-
-        await ws.DoAndAssert(new ClientWantsToJournalDto()
+        
+        await ws.DoAndAssert(new ClientWantsToOpenJournalDto()
         {
-            username = "test_username"
+            username = "Journalist",
+            password = "password"
         }, message =>
         {
-            return message.Count(e => e.eventType == nameof(ServerAddedJournalist)) == 1;
+            return message.Count(e => e.eventType == nameof(ServerAuthenticatesJournalist)) == 1;
         });
 
         await ws.DoAndAssert(new ClientWantsToSubscribeToSubjectDto()
@@ -53,4 +69,7 @@ public class ApiTests
         
         ws.Client.Dispose();
     }
+
+    
+    
 }

@@ -25,7 +25,9 @@ DROP TABLE IF EXISTS journalist;
 
 CREATE TABLE journalist (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL
+    username VARCHAR(25) NOT NULL,
+    hash VARCHAR(255) NOT NULL, 
+    salt VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE notes (
@@ -37,7 +39,7 @@ CREATE TABLE notes (
     FOREIGN KEY (sender) REFERENCES journalist(id)
 );
 
-INSERT INTO journalist (username) VALUES ('Bob');");
+INSERT INTO journalist (username, hash, salt) VALUES ('Journalist', 'QkZxFKTfAjENjFB8UbBY9Sdm3paGxUPvHRh1lvJql0U=', 'OhCMAvZMOBr2nLE6vVQUEsOO5iZGgM3umcZoeB3OehM=');");
         }
     }
 }

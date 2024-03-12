@@ -2,6 +2,7 @@ using Serilog;
 using System.Reflection;
 using api.Exceptions;
 using api.Helpers;
+using api.Security;
 using api.ServerEvents;
 using api.State;
 using Externalities;
@@ -33,7 +34,11 @@ public static class Startup
 
         var builder = WebApplication.CreateBuilder(args);
         
-        // create our repository singleton
+        // create our auth singletons
+        builder.Services.AddSingleton<TokenService>(_ => new TokenService());
+        builder.Services.AddSingleton<CredentialService>(_ => new CredentialService());
+        
+        // create our repository singletons
         string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException();
         builder.Services.AddSingleton<RepositoryManagement>(_ => new RepositoryManagement(connectionString));
         builder.Services.AddSingleton<NoteRepository>(_ => new NoteRepository(connectionString));
@@ -79,16 +84,33 @@ public static class Startup
                                 receivedMessage = message
                             });
                             break;
-                        case InvalidOperationException:
+                        case InvalidDatabaseSettingsException:
                             socket.SendDto(new ServerSendsErrorMessageToClient()
                             {
                                 errorMessage = "There has been an issue communicating with the database.",
                                 receivedMessage = message
                             });
                             break;
+                        case SubException:
+                            socket.SendDto(new ServerSendsErrorMessageToClient()
+                            {
+                                errorMessage = "You are not subscribed to the subject you are contributing to!",
+                                receivedMessage = message
+                            });
+                            break;
+                        case InvalidLoginException:
+                            socket.SendDto(new ServerSendsErrorMessageToClient
+                            {
+                                errorMessage = "Invalid login credentials.",
+                                receivedMessage = message
+                            });
+                            break;
                         default:
                             socket.SendDto(new ServerSendsErrorMessageToClient
                             {
+                                // outside of intended scenarios, such as auth based errors,
+                                // this shouldn't be thrown as I'm a flawless programmer and considered all possible exceptions. 
+                                // but just in case, you never know. ¯\_(ツ)_/¯
                                 errorMessage = e.Message,
                                 receivedMessage = message
                             });

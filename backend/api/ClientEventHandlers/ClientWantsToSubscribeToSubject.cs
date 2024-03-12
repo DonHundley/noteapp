@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Unicode;
+using api.EventFilters;
 using api.Helpers;
 using api.Models.Enums;
 using api.ServerEvents;
@@ -14,9 +15,10 @@ namespace api.ClientEventHandlers;
 
 public class ClientWantsToSubscribeToSubjectDto : BaseDto
 {
-    [Required] [Range(1, int.MaxValue)] public int subjectId { get; set; }
+    [Required] public int subjectId { get; set; }
 }
-
+[AuthValidation]
+[DataValidation]
 public class ClientWantsToSubscribeToSubject(NoteRepository noteRepository) : BaseEventHandler<ClientWantsToSubscribeToSubjectDto>
 {
     public override Task Handle(ClientWantsToSubscribeToSubjectDto dto, IWebSocketConnection socket)
