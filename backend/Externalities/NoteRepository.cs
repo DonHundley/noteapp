@@ -37,23 +37,32 @@ ORDER BY n.timestamp DESC;", getNotesParams);
     public async Task<Note> Add(CreateNoteParams createParams)
     {
         const string sql = @"
-    INSERT INTO Notes(noteContent, timestamp, subjectId, sender) 
-    VALUES(@noteContent, @timestamp, @subjectId, @sender);
-    SELECT LAST_INSERT_ID();";
+INSERT INTO db.notes(noteContent, timestamp, subjectId, sender) 
+VALUES(@noteContent, @timestamp, @subjectId, @sender);
+SELECT LAST_INSERT_ID();";
 
-        using var connection = GetOpenConnection();
-        int id = await connection.QuerySingleAsync<int>(sql, createParams);
-    
-        var newNote = new Note
+        try
         {
-            id = id,
-            noteContent = createParams.noteContent,
-            timestamp = createParams.timestamp,
-            subjectId = createParams.subjectId,
-            sender = createParams.sender
-        };
+            using var connection = GetOpenConnection();
+            int id = await connection.ExecuteAsync(sql, createParams);
+    
+            var newNote = new Note
+            {
+                id = id,
+                noteContent = createParams.noteContent,
+                timestamp = createParams.timestamp,
+                subjectId = createParams.subjectId,
+                sender = createParams.sender
+            };
 
-        return newNote;
+            return newNote;
+        }
+        catch(Exception ex)
+        {
+            // Log exception and rethrow
+            //Log.Error(ex, "Exception occurred in Add method");
+            throw;
+        }
     }
 
     public async Task<Note> Get(int id)

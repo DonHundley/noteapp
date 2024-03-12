@@ -18,16 +18,8 @@ public static class Startup
 
     public static void Main(string[] args)
     {
-        try 
-        {
-            var webApp = Start(args);
-            webApp.Run();
-        }
-        catch (MySql.Data.MySqlClient.MySqlException e)
-        {
-            throw new InvalidDatabaseSettingsException(
-                "Either the database isn't running or the credentials are incorrect!", e);
-        }
+        var webApp = Start(args);
+        webApp.Run();
     }
     
     public static WebApplication Start(string[] args)

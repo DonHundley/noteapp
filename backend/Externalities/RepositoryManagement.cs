@@ -32,12 +32,14 @@ CREATE TABLE journalist (
 
 CREATE TABLE notes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    noteContent(255) TEXT,
+    noteContent TEXT,
     sender INT,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     subjectId INT,
     FOREIGN KEY (sender) REFERENCES journalist(id)
-);");
+);
+
+INSERT INTO journalist (username, hash, salt) VALUES ('Journalist', 'QkZxFKTfAjENjFB8UbBY9Sdm3paGxUPvHRh1lvJql0U=', 'OhCMAvZMOBr2nLE6vVQUEsOO5iZGgM3umcZoeB3OehM=');");
         }
     }
 }

@@ -39,7 +39,7 @@ public class JournalistRepository(string connectionString)
         using var connection = GetOpenConnection();
 
         return connection.QueryFirstOrDefault<Journalist>(
-            $"SELECT journalistId, username, hash, salt FROM db.journalist WHERE username = @{nameof(userParams.username)}",
+            $"SELECT id AS journalistId, username, hash, salt FROM db.journalist WHERE username = @{nameof(userParams.username)}",
             userParams);
     }
 }

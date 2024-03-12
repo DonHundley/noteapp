@@ -18,7 +18,7 @@ public class ClientWantsToJournalDto : BaseDto
     
 }
 
-[AuthValidation]
+
 [DataValidation]
 public class ClientWantsToJournal(
     JournalistRepository journalistRepository,

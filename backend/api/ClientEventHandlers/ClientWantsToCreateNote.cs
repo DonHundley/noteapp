@@ -25,7 +25,7 @@ public class ClientWantsToCreateNoteDto : BaseDto
 [DataValidation]
 public class ClientWantsToCreateNote(NoteRepository noteRepository) : BaseEventHandler<ClientWantsToCreateNoteDto>
 {
-   public override Task Handle(ClientWantsToCreateNoteDto dto, IWebSocketConnection socket)
+   public override async Task Handle(ClientWantsToCreateNoteDto dto, IWebSocketConnection socket)
    {
       
       
@@ -41,7 +41,8 @@ public class ClientWantsToCreateNote(NoteRepository noteRepository) : BaseEventH
       {
          throw new SubException("Journalist is not subscribed to the subject!");
       }
-
+      
+      
       try
       {
          var noteParam = new CreateNoteParams
@@ -51,12 +52,13 @@ public class ClientWantsToCreateNote(NoteRepository noteRepository) : BaseEventH
             subjectId = dto.subjectId,
             sender = WebSocketStateService.GetClient(socket.ConnectionInfo.Id).Journalist.journalistId
          };
-
-         var addNote = noteRepository.Add(noteParam);
-
+         
+         
+         var addNote = await noteRepository.Add(noteParam);
+         
          var note = new Note
          {
-            id = addNote.Result.id,
+            id = addNote.id,
             noteContent = dto.messageContent,
             timestamp = DateTimeOffset.UtcNow,
             subjectId = dto.subjectId,
@@ -73,11 +75,9 @@ public class ClientWantsToCreateNote(NoteRepository noteRepository) : BaseEventH
       catch (Exception e)
       {
          // we didn't let them take notes.
+         Log.Error(e, "An error occured while adding note to repository in ClientWantsToCreateNote");
          throw new RepositoryGeneralException("There was a problem adding the note to the database!");
       }
-      // Success! *dance*
-      return Task.CompletedTask;
-
    }
 }
 
