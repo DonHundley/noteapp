@@ -15,7 +15,7 @@ public class ClientWantsToOpenJournalDto : BaseDto
     public string username { get; set; }
     public string password { get; set; }
 }
-
+// LOGIN
 public class ClientWantsToOpenJournal(
     JournalistRepository journalistRepository,
     TokenService tokenService,
