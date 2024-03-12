@@ -18,7 +18,7 @@ public class ClientWantsToJournalDto : BaseDto
     
 }
 
-
+// REGISTER
 [DataValidation]
 public class ClientWantsToJournal(
     JournalistRepository journalistRepository,
