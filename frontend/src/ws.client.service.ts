@@ -8,6 +8,7 @@ import {ServerAuthenticatesJournalist} from "./models/server/auth/serverAuthenti
 import {ServerSendsErrorMessageToClient} from "./models/server/error/serverSendsErrorMessageToClient";
 import {ServerSubscribesClientToSubject} from "./models/server/serverAdds/serverSubscribesClientTosubject";
 import {ServerAddsNoteToSubject} from "./models/server/serverAdds/serverAddsNoteToSubject";
+import {BehaviorSubject} from "rxjs";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -15,6 +16,8 @@ export class WebSocketClientService {
   public subjectWithConnections: Map<number, number> = new Map<number, number>();
 
   public socketConnection: WebSocketSuperClass;
+
+  loginResult = new BehaviorSubject<boolean>(false);
 
   constructor(public messageService: MessageService){
     this.socketConnection = new WebSocketSuperClass(environment.websocketBaseUrl);
@@ -37,6 +40,7 @@ export class WebSocketClientService {
   ServerAuthenticatesJournalist(dto: ServerAuthenticatesJournalist){
     this.messageService.add({life: 2000, detail: 'Authentication successful'});
     localStorage.setItem("jwt", dto.token!);
+    this.loginResult.next(true);
   }
 
   ServerAuthenticatesJournalistJwt(dto: ServerAuthenticatesJournalist){

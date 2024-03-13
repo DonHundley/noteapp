@@ -27,3 +27,9 @@ export class Subject {
     Object.assign(this, init);
   }
 }
+
+export enum SubjectEnums{
+  general,
+  shopping,
+  school
+}
