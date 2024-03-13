@@ -1,4 +1,4 @@
-﻿import {EventEmitter, Injectable} from "@angular/core";
+﻿import {Injectable} from "@angular/core";
 import {WebSocketSuperClass} from "./models/WebSocketSuperClass";
 import {Note} from "./models/entities";
 import {MessageService} from "primeng/api";
@@ -6,6 +6,8 @@ import {environment} from "./environments/environment";
 import {BaseDto} from "./models/baseDto";
 import {ServerAuthenticatesJournalist} from "./models/server/auth/serverAuthenticatesJournalist";
 import {ServerSendsErrorMessageToClient} from "./models/server/error/serverSendsErrorMessageToClient";
+import {ServerSubscribesClientToSubject} from "./models/server/serverAdds/serverSubscribesClientTosubject";
+import {ServerAddsNoteToSubject} from "./models/server/serverAdds/serverAddsNoteToSubject";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -43,6 +45,16 @@ export class WebSocketClientService {
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient){
     this.messageService.add({life: 5000, severity: 'error', detail: dto.message});
+  }
+
+  ServerSubscribesClientToSubject(dto: ServerSubscribesClientToSubject){
+    this.subjectWithNotes.set(dto.subjectId!, dto.notes!.reverse());
+    this.subjectWithConnections.set(dto.subjectId!, dto.connections!);
+  }
+
+  ServerAddsNoteToSubject(dto: ServerAddsNoteToSubject){
+    this.subjectWithNotes.get(dto.subjectId!)!.push(dto.note!);
+    this.messageService.add({life: 2000, detail: "New Note!"});
   }
 
 }
