@@ -29,7 +29,7 @@ export class Subject {
 }
 
 export enum SubjectEnums{
-  general,
-  shopping,
-  school
+  GENERAL,
+  SHOPPING,
+  SCHOOL
 }

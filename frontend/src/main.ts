@@ -13,6 +13,9 @@ import {SubjectComponent} from "./app/subject/subject.component";
 import {AppRoutingModule} from "./app/app-routing.module";
 import {ReactiveFormsModule} from "@angular/forms";
 import {MessageService} from "primeng/api";
+import {NoteComponent} from "./app/note/note.component";
+import {ToastModule} from "primeng/toast";
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 
 
 
@@ -21,12 +24,15 @@ import {MessageService} from "primeng/api";
     AppComponent,
     LoginComponent,
     RegistrationComponent,
-    SubjectComponent
+    SubjectComponent,
+    NoteComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ToastModule,
+    BrowserAnimationsModule
   ],
   providers: [MessageService],
   bootstrap: [AppComponent]

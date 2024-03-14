@@ -9,6 +9,7 @@ import {ServerSendsErrorMessageToClient} from "./models/server/error/serverSends
 import {ServerSubscribesClientToSubject} from "./models/server/serverAdds/serverSubscribesClientTosubject";
 import {ServerAddsNoteToSubject} from "./models/server/serverAdds/serverAddsNoteToSubject";
 import {BehaviorSubject} from "rxjs";
+import {Router} from "@angular/router";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -19,7 +20,7 @@ export class WebSocketClientService {
 
   loginResult = new BehaviorSubject<boolean>(false);
 
-  constructor(public messageService: MessageService){
+  constructor(public messageService: MessageService, private router: Router){
     this.socketConnection = new WebSocketSuperClass(environment.websocketBaseUrl);
     this.handleEventsEmittedByServer()
   }
@@ -49,6 +50,11 @@ export class WebSocketClientService {
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient){
     this.messageService.add({life: 5000, severity: 'error', detail: dto.message});
+    if(dto.message?.includes('"errorMessage":"Not Authorized"')){
+      localStorage.removeItem("jwt"); // remove the token as it's no longer valid
+      this.loginResult.next(false);   // set login status to false
+      this.router.navigate(['/login']);
+    }
   }
 
   ServerSubscribesClientToSubject(dto: ServerSubscribesClientToSubject){

@@ -3,27 +3,10 @@
     <div class="subjects-list-container">
       <h1>Subjects</h1>
       <div class="subject-buttons">
-        <button *ngFor="let subject of subjects"
-                (click)="subscribeToSubject(Number(subject[0]))">
+        <a *ngFor="let subject of subjects"
+           [routerLink]="['/notes', subject[0]]">
           {{ subject[1] }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="content">
-    <div *ngFor="let n of ws.subjectWithNotes | keyvalue" class="subject-content">
-      <h2>{{ subjects[n.key][1] }}</h2>
-      <div class="notes-list">
-        <div *ngFor="let note of n.value" class="note-item">
-          {{note.noteContent}} at {{dateFromStr(note.timestamp)}}
-        </div>
-        <div class="publish-note">
-          <input [formControl]="messageContent" placeholder="Type your note here...">
-          <button (click)="publishNoteToSubject(Number(n.key))">
-            Publish Note
-          </button>
-        </div>
+        </a>
       </div>
     </div>
   </div>

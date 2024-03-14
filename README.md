@@ -36,3 +36,11 @@ This application will utilize Docker, an Angular front end, websockets for the b
 4. Did I mention I'm annoyed with styling?
 5. Happy with the progress though, there are some functions I want to add, but I really need to move onto tackling AI for the deadline.
 6. Up next: finish styling and move on to implementing AI on both ends of the application.
+
+## Devlog UPDATE FIVE
+1. The front-end is looking nice for the moment. Swapped to using primeng for a general design.
+2. split notes/subjects into their own component, I feel it is a better design and solved a big headache.
+3. Upgraded security, we have a guard now and our jwt has a life cycle of 4 hours. 
+4. The application will redirect the user to the login if the server emits the correct error too. 
+5. Looking into using Quill for the note-taking instead of my custom setup, if it gives a major problem I'm just moving to the AI.
+6. next: Quill? then AI. 

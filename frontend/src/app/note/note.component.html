@@ -1,0 +1,19 @@
+<!-- Show loading indicator while loading -->
+<div *ngIf="isLoading"> Loading... </div>
+
+<!-- Show the content once loaded -->
+<div class="content" *ngIf="!isLoading">
+  <h2>{{SubjectEnums[this.subjectId] }}</h2>
+  <div class="notes-list">
+    <div *ngFor="let note of ws.subjectWithNotes.get(this.subjectId)" class="note-item">
+      {{note.noteContent}} at {{dateFromStr(note.timestamp)}}
+    </div>
+    <div class="publish-note">
+      <input [formControl]="messageContent" placeholder="Type your note here...">
+      <button (click)="publishNoteToSubject(this.subjectId)">
+        Publish Note
+      </button>
+    </div>
+  </div>
+  <a routerLink="/">Go back to subjects</a>
+</div>

@@ -13,19 +13,33 @@ public class TokenService
     public string IssueToken(Journalist journalist)
     {
         try
-        {
-            IJwtAlgorithm algorithm = new HMACSHA512Algorithm();
-            IJsonSerializer serializer = new JsonNetSerializer();
-            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-            var jwtEncoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-            var token = jwtEncoder.Encode(journalist, Environment.GetEnvironmentVariable(ENV_VAR_KEYS.JWT.ToString()));
-            return token;
-        }
-        catch (Exception e)
-        {
-            Log.Error(e, "Problem issuing JWT");
-            throw new InvalidOperationException("Could not create JWT");
-        }
+            {
+                IJwtAlgorithm algorithm = new HMACSHA512Algorithm();
+                IJsonSerializer serializer = new JsonNetSerializer();
+                IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+                var jwtEncoder = new JwtEncoder(algorithm, serializer, urlEncoder);
+        
+                // Specify token expiration in seconds
+                var expirationTimeInSeconds = 60 * 60 * 4; // e.g. 4 hours
+                var unixTimestamp = Convert.ToInt32(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
+                var unixExpirationDate = unixTimestamp + expirationTimeInSeconds;
+        
+                // Create a payload with only required information from journalist
+                var payload = new Dictionary<string, object>
+                {
+                    { "journalistId", journalist.journalistId },
+                    {"username", journalist.username },
+                    { "exp", unixExpirationDate }
+                };
+        
+                var token = jwtEncoder.Encode(payload, Environment.GetEnvironmentVariable(ENV_VAR_KEYS.JWT.ToString()));
+                return token;
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Problem issuing JWT");
+                throw new InvalidOperationException("Could not create JWT");
+            }
     }
 
     public Dictionary<string, string> ValidateJwt(string jwt)
