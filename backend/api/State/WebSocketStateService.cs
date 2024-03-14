@@ -97,7 +97,9 @@ public class WebSocketStateService
         {
             SubjectEnums subject = (SubjectEnums)subjectId;
             return _subjectClients.TryGetValue(subject, out var clients)
-                ? clients.Select(clientId => _clients[clientId].Connection).ToList()
+                ? clients.Where(clientId => _clients.ContainsKey(clientId))
+                         .Select(clientId => _clients[clientId].Connection)
+                         .ToList()
                 : new List<IWebSocketConnection>();
         }
         else

@@ -1,0 +1,18 @@
+<form [formGroup]="loginForm" (ngSubmit)="signIn()" class="login-form">
+  <h2>Welcome to Commentate!</h2>
+
+  <label>
+    Username:
+    <input type="email" formControlName="username" placeholder="Enter your Username">
+  </label>
+
+  <label>
+    Password:
+    <input type="password" formControlName="password" placeholder="Enter your password">
+  </label>
+
+  <div class="form-actions">
+    <button type="submit" [disabled]="!loginForm.valid">Sign In</button>
+    <button [routerLink]="'/register'">Join Commentate</button>
+  </div>
+</form>

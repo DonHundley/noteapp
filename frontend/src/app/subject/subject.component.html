@@ -1,0 +1,13 @@
+<div class="subject-container">
+  <div class="subjects-list">
+    <div class="subjects-list-container">
+      <h1>Subjects</h1>
+      <div class="subject-buttons">
+        <a *ngFor="let subject of subjects"
+           [routerLink]="['/notes', subject[0]]">
+          {{ subject[1] }}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

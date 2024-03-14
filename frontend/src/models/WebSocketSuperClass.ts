@@ -11,6 +11,7 @@ export class WebSocketSuperClass extends ReconnectingWebSocket{
   }
 
   sendDto(dto: BaseDto<any>){
+    console.log("Sending: " + JSON.stringify(dto));
     if (this.readyState === WebSocket.OPEN){
       this.send(JSON.stringify(dto));
     }else{
@@ -19,11 +20,6 @@ export class WebSocketSuperClass extends ReconnectingWebSocket{
   }
 
   private handleOpen() {
-    let jwt = localStorage.getItem('jwt');
-    if (jwt && jwt != ''){
-      this.sendDto(new ClientWantsToAuthenticate({jwt: jwt}));
-    }
-
     while (this.messageQueue.length > 0){
       const dto = this.messageQueue.shift();
       if (dto){
