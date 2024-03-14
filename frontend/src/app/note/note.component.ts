@@ -5,6 +5,8 @@ import {ActivatedRoute} from "@angular/router";
 import {ClientWantsToSubscribeToSubject} from "../../models/client/subject/ClientWantsToSubscribeToSubject";
 import {ClientWantsToCreateNote} from "../../models/client/note/ClientWantsToCreateNote";
 import {Note, SubjectEnums} from "../../models/entities";
+import {ClientWantsToDeleteNote} from "../../models/client/note/ClientWantsToDeleteNote";
+import {ClientWantsToEditNote} from "../../models/client/note/ClientWantsToEditNote";
 
 
 @Component({
@@ -24,6 +26,7 @@ export class NoteComponent implements OnInit {
   subjectId: number = Number.MAX_SAFE_INTEGER;  // we know we do not have this many subjects.
   messageContent = new FormControl("");
   notesReversed = false;
+  selectedNote: Note | undefined;
 
   // Quill options
   toolbarOptions = {
@@ -91,9 +94,28 @@ export class NoteComponent implements OnInit {
   }
 
   selectNote(note: Note) {
+    this.selectedNote = note;
     if (note.noteContent) {
       this.messageContent.setValue(note.noteContent);
     }
   }
 
+  deleteNoteFromSubject(){
+    if (this.selectedNote){
+      this.ws.socketConnection.sendDto(new ClientWantsToDeleteNote({id: this.selectedNote.id, subjectId: this.selectedNote.subjectId}))
+      this.resetNote();
+    }
+
+  }
+
+  updateNoteInSubject(){
+    if (this.selectedNote) {
+      this.ws.socketConnection.sendDto(new ClientWantsToEditNote({id: this.selectedNote.id, subjectId: this.selectedNote.subjectId, messageContent: this.selectedNote.noteContent}))
+    }
+  }
+
+  resetNote() {
+    this.selectedNote = undefined;
+    this.messageContent.reset();
+  }
 }
