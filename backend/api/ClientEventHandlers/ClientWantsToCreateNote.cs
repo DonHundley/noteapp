@@ -17,7 +17,7 @@ namespace api.ClientEventHandlers;
 
 public class ClientWantsToCreateNoteDto : BaseDto
 {
-   [Required] [MinLength(1)] [MaxLength(250)] public string? messageContent { get; set; } 
+   [Required] [MinLength(1)] public string? messageContent { get; set; } 
    
    [Required] public int subjectId { get; set; }
 }

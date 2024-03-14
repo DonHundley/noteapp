@@ -2,6 +2,7 @@ using Dapper;
 using Externalities.ParameterModels;
 using Externalities.QueryModels;
 using MySql.Data.MySqlClient;
+using Serilog;
 
 namespace Externalities;
 
@@ -17,8 +18,10 @@ public class NoteRepository(string connectionString)
 
     public IEnumerable<Note> GetNotesBySubject(GetNotesParams getNotesParams)
     {
-        using var connection = GetOpenConnection();
-        return connection.Query<Note>($@"
+        try
+        {
+            using var connection = GetOpenConnection();
+            return connection.Query<Note>($@"
 SELECT 
     n.noteContent as {nameof(Note.noteContent)},
     n.sender as {nameof(Note.sender)},
@@ -29,7 +32,13 @@ FROM notes n
 JOIN journalist j ON n.sender = j.id 
 WHERE n.id < @{nameof(GetNotesParams.lastNoteId)} AND 
       n.subjectId = @{nameof(GetNotesParams.subjectId)}
-ORDER BY n.timestamp DESC;", getNotesParams); 
+ORDER BY n.timestamp DESC;", getNotesParams);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while getting notes by subject in NoteRepository");
+            throw new Exception();
+        }
     }
 
 
@@ -59,30 +68,58 @@ SELECT LAST_INSERT_ID();";
         }
         catch(Exception ex)
         {
-            // Log exception and rethrow
-            //Log.Error(ex, "Exception occurred in Add method");
-            throw;
+            Log.Error(ex, "An error occurred while adding a note in NoteRepository");
+            throw new Exception();
+        }
+    }
+    
+
+    public async Task<Note> Update(EditNoteParams editParams)
+    {
+        const string sql = @"
+UPDATE db.notes
+SET noteContent = @noteContent, 
+    timestamp = @timestamp, 
+    subjectId = @subjectId, 
+    sender = @sender
+WHERE id = @id;
+SELECT * FROM db.notes WHERE id = @id;";
+
+        try
+        {
+            using var connection = GetOpenConnection();
+            var updatedNote = await connection.QueryFirstOrDefaultAsync<Note>(sql, editParams);
+
+            if(updatedNote == null)
+            {
+                throw new Exception("No note found with the specified ID");
+            }
+
+            return updatedNote;
+        }
+        catch(Exception ex)
+        {
+            Log.Error(ex, "An error occurred while updating a note in NoteRepository");
+            throw new Exception();
         }
     }
 
-    public async Task<Note> Get(int id)
+    public async Task<bool> Delete(DeleteNotesParams deleteParams)
     {
-        const string sql = "SELECT * FROM Notes WHERE Id = @Id;";
-        using var connection = GetOpenConnection();
-        return await connection.QuerySingleOrDefaultAsync<Note>(sql, new { Id = id });
-    }
+        const string sql = "DELETE FROM db.notes WHERE id = @id;";
 
-    public async Task Update(Note note)
-    {
-        const string sql = "UPDATE Notes SET Content = @Content, Subject = @Subject WHERE Id = @Id;";
-        using var connection = GetOpenConnection();
-        await connection.ExecuteAsync(sql, note);
-    }
+        try
+        {
+            using var connection = GetOpenConnection();
+            var result = await connection.ExecuteAsync(sql, deleteParams);
 
-    public async Task Delete(int id)
-    {
-        const string sql = "DELETE FROM Notes WHERE Id = @Id;";
-        using var connection = GetOpenConnection();
-        await connection.ExecuteAsync(sql, new { Id = id });
+            // If no rows were affected, return false. Otherwise, return true.
+            return result > 0;
+        }
+        catch(Exception ex)
+        {
+            Log.Error(ex, "An error occurred while deleting a note in NoteRepository");
+            throw new Exception();
+        }
     }
 }

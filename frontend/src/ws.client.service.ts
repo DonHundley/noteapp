@@ -10,6 +10,8 @@ import {ServerSubscribesClientToSubject} from "./models/server/serverAdds/server
 import {ServerAddsNoteToSubject} from "./models/server/serverAdds/serverAddsNoteToSubject";
 import {BehaviorSubject} from "rxjs";
 import {Router} from "@angular/router";
+import {ServerUpdatesNoteInSubject} from "./models/server/serverAdds/ServerUpdatesNoteInSubject";
+import {ServerDeletesNoteInSubject} from "./models/server/serverAdds/ServerDeletesNoteInSubject";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -67,4 +69,33 @@ export class WebSocketClientService {
     this.messageService.add({life: 2000, detail: "New Note!"});
   }
 
+  ServerUpdatesNoteInSubject(dto: ServerUpdatesNoteInSubject){
+    const subjectNotes = this.subjectWithNotes.get(dto.subjectId!);
+    if (subjectNotes) {
+      const noteIndex = subjectNotes.findIndex(note => note.id === dto.note?.id);
+      if (noteIndex !== -1) {
+        subjectNotes[noteIndex] = dto.note!;
+        this.messageService.add({life: 2000, detail: "Updated Note!"});
+      } else {
+        this.messageService.add({life: 2000, detail: "Note update failed"});
+      }
+    }else {
+      this.messageService.add({life: 2000, detail: "Note update failed"});
+    }
+  }
+
+  ServerDeletesNoteInSubject(dto: ServerDeletesNoteInSubject){
+    const subjectNotes = this.subjectWithNotes.get(dto.subjectId!);
+    if (subjectNotes) {
+      const noteIndex = subjectNotes.findIndex(note => note.id === dto.id);
+      if (noteIndex !== -1) {
+        subjectNotes.splice(noteIndex, 1);
+        this.messageService.add({life: 2000, detail: "Deleted Note!"});
+      } else {
+        this.messageService.add({life: 2000, detail: "Note deletion failed"});
+      }
+    } else {
+      this.messageService.add({life: 2000, detail: "Note deletion failed"});
+    }
+  }
 }

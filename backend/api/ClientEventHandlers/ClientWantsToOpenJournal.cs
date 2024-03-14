@@ -1,3 +1,4 @@
+using api.EventFilters;
 using api.Exceptions;
 using api.Helpers;
 using api.Security;
@@ -16,6 +17,7 @@ public class ClientWantsToOpenJournalDto : BaseDto
     public string password { get; set; }
 }
 // LOGIN
+[DataValidation]
 public class ClientWantsToOpenJournal(
     JournalistRepository journalistRepository,
     TokenService tokenService,
