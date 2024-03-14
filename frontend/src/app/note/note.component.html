@@ -3,17 +3,38 @@
 
 <!-- Show the content once loaded -->
 <div class="content" *ngIf="!isLoading">
-  <h2>{{SubjectEnums[this.subjectId] }}</h2>
-  <div class="notes-list">
-    <div *ngFor="let note of ws.subjectWithNotes.get(this.subjectId)" class="note-item">
-      {{note.noteContent}} at {{dateFromStr(note.timestamp)}}
+  <h2>{{SubjectEnums[this.subjectId]}}</h2>
+
+  <div class="flex-container">
+    <div class="notes-container">
+      <div class="notes-container-header">
+        <button class="note-number-title" (click)="handleNoteOrder()">
+          {{notesReversed ? '&#9650;' : '&#9660;'}}
+        </button>
+        <div class="date-container-title">Date</div>
+        <div class="note-content-container-title">Preview</div>
+      </div>
+
+      <div *ngFor="let note of ws.subjectWithNotes.get(this.subjectId); let i = index" class="note-item"
+           (click)="selectNote(note)">
+        <div class="note-number">{{i + 1}}.</div>
+        <div class="date-container">
+          <span>{{dateFromStr(note.timestamp)}}</span>
+        </div>
+        <div class="note-content-container">
+          <span>{{(note.noteContent ? note.noteContent : '') | removeHtmlTags | slice:0:10}}</span>
+        </div>
+      </div>
     </div>
+
     <div class="publish-note">
-      <input [formControl]="messageContent" placeholder="Type your note here...">
-      <button (click)="publishNoteToSubject(this.subjectId)">
+      <quill-editor [formControl]="messageContent" [modules]="toolbarOptions"
+                    class="note-quill-editor quill-shadow"></quill-editor>
+      <button class="publish-note-button" (click)="publishNoteToSubject(this.subjectId)">
         Publish Note
       </button>
     </div>
   </div>
-  <a routerLink="/">Go back to subjects</a>
+
+  <button class="back-button" routerLink="/">Go back to subjects</button>
 </div>
