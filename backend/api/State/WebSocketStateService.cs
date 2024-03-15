@@ -31,18 +31,11 @@ public class WsWithMetadata(IWebSocketConnection connection)
 /// </summary>
 public class WebSocketStateService
 {
-    // Dictionary that maintains the map of a Guid to a specific websocket
-    /// <summary>
-    /// Represents a WebSocket connection with additional metadata.
-    /// </summary>
+    
     private static readonly Dictionary<Guid, WsWithMetadata> _clients = new();
-    // Dictionary that maintains a map between each client and each subject they are subscribed to
-    /// <summary>
-    /// Dictionary that maintains a map between each client and each subject they are subscribed to.
-    /// </summary>
+  
     private static readonly Dictionary<Guid, HashSet<SubjectEnums>> _clientSubjects = new();
-    // Dictionary that is used to track which clients are subscribed to which subject
-    /// ` class.
+   
     private static readonly Dictionary<SubjectEnums, HashSet<Guid>> _subjectClients = new();
     
     
@@ -133,13 +126,26 @@ public class WebSocketStateService
         }
     }
 
+    public static void UnsubscribeFromSubject(Guid clientId, int subjectId)
+    {
+        SubjectEnums subject = (SubjectEnums)subjectId;
+        if (_clientSubjects.TryGetValue(clientId, out var clientSubject))
+        {
+            clientSubject.Remove(subject);
+        }
+        
+        if (_subjectClients.TryGetValue(subject, out var clients))
+        {
+            clients.Remove(clientId);
+        }
+    }
+
     /// <summary>
-    /// Adds a note to the specified subject.
+    /// This method is actually abstractly used for adding, deleting, or updating a note despite the name.
     /// </summary>
     /// <typeparam name="T">The type of the note DTO.</typeparam>
     /// <param name="subjectId">The ID of the subject.</param>
     /// <param name="dto">The note DTO.</param>
-    /// <exception cref="InvalidEnumValueException">Thrown when the subject ID is invalid.</exception>
     public static void AddNoteToSubject<T>(int subjectId, T dto ) where T : BaseDto
     {
         SubjectEnums subject = (SubjectEnums)subjectId;
