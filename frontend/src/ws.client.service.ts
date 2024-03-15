@@ -71,10 +71,14 @@ export class WebSocketClientService {
 
   ServerUpdatesNoteInSubject(dto: ServerUpdatesNoteInSubject){
     const subjectNotes = this.subjectWithNotes.get(dto.subjectId!);
+
+    console.log(dto.note?.noteContent);
     if (subjectNotes) {
       const noteIndex = subjectNotes.findIndex(note => note.id === dto.note?.id);
       if (noteIndex !== -1) {
+        console.log(subjectNotes[noteIndex]);
         subjectNotes[noteIndex] = dto.note!;
+        console.log(subjectNotes[noteIndex]);
         this.messageService.add({life: 2000, detail: "Updated Note!"});
       } else {
         this.messageService.add({life: 2000, detail: "Note update failed"});

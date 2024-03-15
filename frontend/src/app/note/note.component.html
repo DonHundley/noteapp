@@ -3,10 +3,7 @@
 
 <!-- Show the content once loaded -->
 <div class="content" *ngIf="!isLoading">
-  <h2>{{SubjectEnums[this.subjectId]}}</h2>
 
-  <!-- "New Note" Button -->
-  <button class="new-note-button" (click)="resetNote()">New Note</button>
 
   <div class="flex-container">
     <div class="notes-container">
@@ -31,12 +28,16 @@
     </div>
 
     <div class="publish-note">
+      <h2>{{SubjectEnums[this.subjectId]}}</h2>
       <quill-editor [formControl]="messageContent" [modules]="toolbarOptions"
                     class="note-quill-editor quill-shadow"></quill-editor>
-      <button class="publish-note-button" (click)="selectedNote ? updateNoteInSubject(): publishNoteToSubject(this.subjectId)">
-        {{selectedNote ? 'Update Note' : 'Publish Note'}}
-      </button>
-      <button class="delete-note-button" *ngIf="selectedNote" (click)="deleteNoteFromSubject()">Delete Note</button>
+      <div class="button-bar">
+        <button class="new-or-publish-button" (click)="onNewOrUpdateClick()" [disabled]="!messageContent.value">
+          {{selectedNote ? 'New Note' : 'Publish Note'}}
+        </button>
+        <button class="update-note-button" *ngIf="selectedNote" (click)="updateNoteInSubject()" [disabled]="!messageContent.value">Update Note</button>
+        <button class="delete-note-button" *ngIf="selectedNote" (click)="deleteNoteFromSubject()">Delete Note</button>
+      </div>
     </div>
   </div>
 

@@ -5,7 +5,7 @@ An application built with the idea of storing notes from audio commands for Full
 
 This application will have an event driven architecture. Other planned (or implemented) features:
 1. I will utilize Docker-compose for the application and database. (currently an issue with this, DB works though)
-2. Angular front end with Quill and some primeng stuff I've seen Alex use; I liked the look of it for a style scheme and alerts. (DONE-ish, I can't stop messing with things.)
+2. Angular front end with Quill and some primeng stuff I've seen Alex use; I liked the look of it for a style scheme and alerts. (DONE)
 3. server side is C# and we are using websockets (DONE)
 4. The database will be MySQL (DONE)
 5. JWT for auth with features for controlling this on server and client side. (DONE)
@@ -16,12 +16,13 @@ Things I will handle with enough time:
 2. Fix that docker issue.
 3. Implement MQTT, I haven't given this a ton of thought, but it would be nice to use the IoT skills.
 4. Deployment. This will be done post deadline if necessary.
+5. More modern feeling to the usage experience, I have an idea for automatic note saving/updating which will remove the need for buttons.
 
 Things that won't happen:
 1. Actually achieve satisfaction with the styling. SEND HELP.
 
 Currently working with:
-1. Quill, it is technically done; However, I decided that I want more functions for my notes now that I have a sweet editor.
+1. Speech-to-text
 
  ## Dev-log UPDATE ONE
 
@@ -68,3 +69,9 @@ Currently working with:
 2. Unfortunately I now wish I fully implemented CRUD functions for notes, because my front-end feels so nice that I want them now. R.I.P. me.
 3. Next? still not AI, this has to have full functions; It feels like a disservice to the effort. Mostly hours messing with scss.
 4. I used to be annoyed with styling. I still am, but I used to be too.
+
+## Dev-log UPDATE SEVEN
+1. Done with implementing current features on the front-end.
+2. styling is acceptable.
+3. New note functions are implemented, and can be updated in what feels like a moderately natural way.
+4. Next: No more putting it off, AI.

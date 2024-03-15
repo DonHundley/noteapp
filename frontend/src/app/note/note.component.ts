@@ -108,9 +108,17 @@ export class NoteComponent implements OnInit {
 
   }
 
+  onNewOrUpdateClick(): void {
+    if (this.selectedNote) {
+      this.resetNote();
+    } else {
+      this.publishNoteToSubject(this.subjectId);
+    }
+  }
+
   updateNoteInSubject(){
     if (this.selectedNote) {
-      this.ws.socketConnection.sendDto(new ClientWantsToEditNote({id: this.selectedNote.id, subjectId: this.selectedNote.subjectId, messageContent: this.selectedNote.noteContent}))
+      this.ws.socketConnection.sendDto(new ClientWantsToEditNote({id: this.selectedNote.id, subjectId: this.selectedNote.subjectId, messageContent: this.messageContent.value!}))
     }
   }
 
