@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text;
 using api.ClientEventHandlers;
 using api.Exceptions;
 using api.ServerEvents;
@@ -16,46 +17,65 @@ namespace api.SpeechToText;
 
 public class ClientWantsToSpeakDto : BaseDto
 {
-   [Required] public byte[] AudioData { get; set; } 
-   [Required] public int SubjectId { get; set; }
-   
+    [Required]
+    public string AudioData { get; set; } 
+
+    [Required]
+    public int SubjectId { get; set; }
 }
 
 public class ClientWantsToSpeak(NoteRepository noteRepository) : BaseEventHandler<ClientWantsToSpeakDto>
 {
+
     private static SpeechRecognizer recognizer;
     private static SpeechConfig config = SpeechConfig.FromSubscription(Environment.GetEnvironmentVariable("TTSKEY"), Environment.GetEnvironmentVariable("REGION"));
 
-    private async Task<string> SpeechToText(byte[] audioData)
+    private byte[] ConvertFromBase64(String base64String) 
     {
-        using var reader = new BinaryReader(new MemoryStream(audioData));
-        using var audioInputStream = AudioInputStream.CreatePushStream();
-        
-        
-        recognizer = new SpeechRecognizer(config, AudioConfig.FromStreamInput(audioInputStream));
+        return Convert.FromBase64String(base64String);
+    }
 
-        // Read the input audio as a stream and push it to the recognizer as needed
+    private async Task<string> SpeechToText(string base64Audio)
+    {
+        
+        
+        var audioData = ConvertFromBase64(base64Audio);
+    
+        using var reader = new BinaryReader(new MemoryStream(audioData));
+        using var audioInputStream = AudioInputStream.CreatePushStream(
+            AudioStreamFormat.GetCompressedFormat(AudioStreamContainerFormat.OGG_OPUS));
+        recognizer = new SpeechRecognizer(config, AudioConfig.FromStreamInput(audioInputStream));
+    
+        StringBuilder completeTranscript = new StringBuilder();
+    
+        recognizer.Recognized += (s, e) => {
+            if (e.Result.Reason == ResultReason.RecognizedSpeech)
+            {
+                completeTranscript.Append(e.Result.Text + " ");
+            }
+            else if (e.Result.Reason == ResultReason.NoMatch)
+            {
+                Console.WriteLine($"NOMATCH: Speech could not be recognized.");
+            }
+        };
+    
         byte[] audioBuffer = new byte[1024];
         int bytesRead;
         while ((bytesRead = reader.Read(audioBuffer, 0, audioBuffer.Length)) > 0)
         {
             audioInputStream.Write(audioBuffer, bytesRead);
         }
-        // Signal that the stream is done
+    
         audioInputStream.Close();
-
-        var result = await recognizer.RecognizeOnceAsync();
-
-        if (result.Reason == ResultReason.RecognizedSpeech)
-        {
-            return result.Text;
-        }
-        else if (result.Reason == ResultReason.NoMatch)
-        {
-            throw new Exception($"NOMATCH: No speech could be recognized.");
-        }
+    
+        await recognizer.StartContinuousRecognitionAsync();
         
-        return "";
+        // Assuming the audio content is less than 5 seconds long.
+        await Task.Delay(TimeSpan.FromSeconds(5));
+    
+        await recognizer.StopContinuousRecognitionAsync();
+    
+        return completeTranscript.ToString().Trim();
     }
 
     public override async Task Handle(ClientWantsToSpeakDto dto, IWebSocketConnection socket)
@@ -63,7 +83,7 @@ public class ClientWantsToSpeak(NoteRepository noteRepository) : BaseEventHandle
         // check if we are using TTS
         if (Environment.GetEnvironmentVariable("NOTUSINGTTS") == "False")
         {
-            var messageContent = await this.SpeechToText(dto.AudioData);
+            var messageContent = await SpeechToText(dto.AudioData);
 
         
         

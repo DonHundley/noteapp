@@ -9,7 +9,7 @@ This application will have an event driven architecture. Other planned (or imple
 3. server side is C# and we are using websockets (DONE)
 4. The database will be MySQL (DONE)
 5. JWT for auth with features for controlling this on server and client side. (DONE)
-6. Voice to text AI. (TODO)
+6. Voice to text AI. (DONE)
 
 Things I will handle with enough time:
 1. I want to have better front-end exception coverage.
@@ -17,12 +17,13 @@ Things I will handle with enough time:
 3. Implement MQTT, I haven't given this a ton of thought, but it would be nice to use the IoT skills.
 4. Deployment. This will be done post deadline if necessary.
 5. More modern feeling to the usage experience, I have an idea for automatic note saving/updating which will remove the need for buttons.
+6. Voice based commands would be cool, I have an idea of how to do it too.
 
 Things that won't happen:
 1. Actually achieve satisfaction with the styling. SEND HELP.
 
 Currently working with:
-1. Speech-to-text
+1. Bug hunting 2: electric dockeroo
 
  ## Dev-log UPDATE ONE
 
@@ -82,3 +83,10 @@ Currently working with:
 2. Developed a test for TTS.
 3. TTS disables if env vars are not set.
 4. Messed with Docker some more, I'm still not sure what the issue is. Still just using docker-compose up db and dotnet run.
+
+## Dev-log UPDATE NINE
+
+1. I've been calling it text to speech, even my variables are text to speech, my brain is broken and the speech sdk is to blame.
+2. It is finished, and it works. A Journalist can speak and after a short delay their note will be added. 
+3. The documentation for the SDK is a nightmare and feels outdated.
+4. Next? Bug hunting before presentation. Docker is the main target, I would really like to fix that issue. 

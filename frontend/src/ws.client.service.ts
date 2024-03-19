@@ -12,6 +12,7 @@ import {BehaviorSubject} from "rxjs";
 import {Router} from "@angular/router";
 import {ServerUpdatesNoteInSubject} from "./models/server/serverAdds/ServerUpdatesNoteInSubject";
 import {ServerDeletesNoteInSubject} from "./models/server/serverAdds/ServerDeletesNoteInSubject";
+import {ServerTranscribesNoteFromSpeech} from "./models/server/serverAdds/serverTranscribesNoteFromSpeech";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -67,6 +68,11 @@ export class WebSocketClientService {
   ServerAddsNoteToSubject(dto: ServerAddsNoteToSubject){
     this.subjectWithNotes.get(dto.subjectId!)!.push(dto.note!);
     this.messageService.add({life: 2000, detail: "New Note!"});
+  }
+
+  ServerTranscribesNoteFromSpeech(dto: ServerTranscribesNoteFromSpeech){
+    this.subjectWithNotes.get(dto.subjectId!)!.push(dto.note!);
+    this.messageService.add({life: 2000, detail: "Transcribed Note!"});
   }
 
   ServerUpdatesNoteInSubject(dto: ServerUpdatesNoteInSubject){
