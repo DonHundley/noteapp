@@ -75,3 +75,10 @@ Currently working with:
 2. styling is acceptable.
 3. New note functions are implemented, and can be updated in what feels like a moderately natural way.
 4. Next: No more putting it off, AI.
+
+## Dev-log UPDATE EIGHT
+
+1. Text to speech works on the back end.
+2. Developed a test for TTS.
+3. TTS disables if env vars are not set.
+4. Messed with Docker some more, I'm still not sure what the issue is. Still just using docker-compose up db and dotnet run.
