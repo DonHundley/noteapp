@@ -7,6 +7,7 @@ import {ClientWantsToCreateNote} from "../../models/client/note/ClientWantsToCre
 import {Note, SubjectEnums} from "../../models/entities";
 import {ClientWantsToDeleteNote} from "../../models/client/note/ClientWantsToDeleteNote";
 import {ClientWantsToEditNote} from "../../models/client/note/ClientWantsToEditNote";
+import {ClientWantsToSpeak} from "../../models/client/speech/ClientWantsToSpeak";
 
 
 @Component({
@@ -27,6 +28,12 @@ export class NoteComponent implements OnInit {
   messageContent = new FormControl("");
   notesReversed = false;
   selectedNote: Note | undefined;
+
+  // recording options
+  isRecording = false;
+  recorder: MediaRecorder | null = null;
+  chunks: Blob[] = [];
+  audio: Blob | null = null;
 
   // Quill options
   toolbarOptions = {
@@ -125,5 +132,70 @@ export class NoteComponent implements OnInit {
   resetNote() {
     this.selectedNote = undefined;
     this.messageContent.reset();
+  }
+
+  async setupAndStartRecording(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.recorder = new MediaRecorder(stream, {mimeType: 'audio/ogg;codecs=opus'});
+
+      if (!MediaRecorder.isTypeSupported('audio/ogg; codecs=opus')) {
+        this.ws.messageService.add({severity:'error', summary:'Error', detail:'Browser does not support audio format.'});
+      }
+
+      // Event triggered when data is available
+      this.recorder.ondataavailable = e => {
+        this.chunks.push(e.data);
+      }
+
+
+      // Event triggered when recording stops
+      this.recorder.onstop = async () => {
+        this.audio = new Blob(this.chunks, { 'type' : 'audio/ogg; codecs=opus' });
+        this.chunks = [];
+
+        console.log(this.chunks);
+
+        const reader = new FileReader();
+
+        // Wrap the reader in a Promise to await it
+        const loadPromise = new Promise((resolve, reject) => {
+          reader.onload = resolve;
+          reader.onerror = reject;
+        });
+
+        reader.readAsDataURL(this.audio);
+
+        // Wait for the FileReader to finish
+        await loadPromise;
+
+        let base64Audio = reader.result as string;
+        base64Audio = base64Audio.split(",")[1];
+
+
+        this.ws.socketConnection.sendDto(new ClientWantsToSpeak({AudioData: base64Audio, SubjectId: this.subjectId}));
+      };
+
+      this.recorder.start(20);
+      this.isRecording = true;
+
+    } catch (error) {
+      this.ws.messageService.add({severity:'error', summary:'Error', detail:'There was a problem with recording.'});
+    }
+  }
+
+  stopRecording(): void {
+    if (this.recorder) {
+      this.recorder.stop();
+      this.isRecording = false;
+    }
+  }
+
+  startStopRecording(): void {
+    if (this.isRecording) {
+      this.stopRecording();
+    } else {
+      this.setupAndStartRecording();
+    }
   }
 }

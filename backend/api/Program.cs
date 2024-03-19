@@ -45,13 +45,29 @@ public static class Startup
         builder.Services.AddSingleton<JournalistRepository>(_ => new JournalistRepository(connectionString));
         var services = builder.FindAndInjectClientEventHandlers(Assembly.GetExecutingAssembly());
 
-        builder.WebHost.UseUrls("http://*:5142");
+        
+        
         var app = builder.Build();
-        var port = Environment.GetEnvironmentVariable(ENV_VAR_KEYS.PORT.ToString()) ?? "8181";
         var server = new WebSocketServer("ws://0.0.0.0:8181");
+        
+        // Check environmental vars
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("Not found");
         if (string.IsNullOrEmpty(env))
             throw new Exception("Must have ASPNETCORE_ENVIRONMENT");
+        
+        // disable/enable text to speech
+        var env1 = Environment.GetEnvironmentVariable("REGION");
+        var env2 = Environment.GetEnvironmentVariable("TTSKEY");
+        if (string.IsNullOrEmpty(env1) || string.IsNullOrEmpty(env2))
+        {
+            var notUsingTts = true;
+            Environment.SetEnvironmentVariable("NOTUSINGTTS", notUsingTts.ToString());
+        }
+        else
+        {
+            var notUsingTts = false;
+            Environment.SetEnvironmentVariable("NOTUSINGTTS", notUsingTts.ToString()); 
+        }
         
         // if the environment is development, call the rebuild method in RepositoryManagement
         if (env == "Development")
@@ -59,6 +75,9 @@ public static class Startup
             var repositoryManagement = app.Services.GetRequiredService<RepositoryManagement>();
             repositoryManagement.ExecuteRebuildDb();
         }
+        
+        
+        
         
         server.RestartAfterListenError = true;
 

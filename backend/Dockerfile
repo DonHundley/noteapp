@@ -13,4 +13,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=publish /app/publish .
 EXPOSE 80
+EXPOSE 8181
+EXPOSE 5000
 ENTRYPOINT ["dotnet", "api.dll"]

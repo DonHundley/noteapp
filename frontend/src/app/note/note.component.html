@@ -42,4 +42,10 @@
   </div>
 
   <button class="back-button" routerLink="/">Go back to subjects</button>
+  <button class="recording-button" (click)="startStopRecording()" [ngClass]="{ 'pulse': isRecording }">
+
+    {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
+  </button>
+
+
 </div>
