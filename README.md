@@ -3,8 +3,25 @@
 
 An application built with the idea of storing notes from audio commands for Full-Stack AI project.
 
+In the current state the application works well, I would like to round it out by giving it more features and functions.
+
+Concept: 
+The inspiration for the application comes from a personal use, while I understand there may be some questions as to why
+a user would want to have notes accessed by multiple users, it is something that my wife and I want for personal use.
+Our current shared note taking solution is discord, and it just isn't good for that.
+
+Some environmental variables will need to be set in order to use docker or the application, you can see these in the docker-compose. If TTS and REGION are left blank, the speech element will be disabled.
+
+Then just use:
+
+```Docker-compose up```
+
+and access the app at:
+
+```http://localhost:4200/login```
+
 This application will have an event driven architecture. Other planned (or implemented) features:
-1. I will utilize Docker-compose for the application and database. (currently an issue with this, DB works though)
+1. I will utilize Docker-compose for the application and database. (DONE)
 2. Angular front end with Quill and some primeng stuff I've seen Alex use; I liked the look of it for a style scheme and alerts. (DONE)
 3. server side is C# and we are using websockets (DONE)
 4. The database will be MySQL (DONE)
@@ -90,3 +107,9 @@ Currently working with:
 2. It is finished, and it works. A Journalist can speak and after a short delay their note will be added. 
 3. The documentation for the SDK is a nightmare and feels outdated.
 4. Next? Bug hunting before presentation. Docker is the main target, I would really like to fix that issue. 
+
+## Dev-log UPDATE TEN
+
+1. Docker issue fixed!
+2. Application is presentation ready, I'm quite happy  with it and most everything went to schedule.
+3. Next? Post project development will probably slow, but I will spend more time with it.
