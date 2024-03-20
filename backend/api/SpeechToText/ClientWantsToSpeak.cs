@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text;
+using System.Text.Json.Serialization;
 using api.ClientEventHandlers;
 using api.Exceptions;
 using api.ServerEvents;
@@ -47,18 +48,24 @@ public class ClientWantsToSpeak(NoteRepository noteRepository) : BaseEventHandle
         recognizer = new SpeechRecognizer(config, AudioConfig.FromStreamInput(audioInputStream));
     
         StringBuilder completeTranscript = new StringBuilder();
-    
+        
+        
         recognizer.Recognized += (s, e) => {
             if (e.Result.Reason == ResultReason.RecognizedSpeech)
             {
                 completeTranscript.Append(e.Result.Text + " ");
+
+                
+
             }
             else if (e.Result.Reason == ResultReason.NoMatch)
             {
-                Console.WriteLine($"NOMATCH: Speech could not be recognized.");
+                Console.WriteLine("NOMATCH: Speech could not be recognized. " + NoMatchDetails.FromResult(e.Result));
             }
         };
-    
+        
+        
+        
         byte[] audioBuffer = new byte[1024];
         int bytesRead;
         while ((bytesRead = reader.Read(audioBuffer, 0, audioBuffer.Length)) > 0)
@@ -71,7 +78,7 @@ public class ClientWantsToSpeak(NoteRepository noteRepository) : BaseEventHandle
         await recognizer.StartContinuousRecognitionAsync();
         
         // Assuming the audio content is less than 5 seconds long.
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        await Task.Delay(TimeSpan.FromSeconds(20));
     
         await recognizer.StopContinuousRecognitionAsync();
     
@@ -117,4 +124,25 @@ public class ServerTranscribesNoteFromSpeech : BaseDto
 {
     public Note? note { get; set; }
     public int subjectId { get; set; }
+}
+
+public class SpeechRecognitionResult
+{
+    [JsonPropertyName("Text")]
+    public string Text { get; set; }
+
+    [JsonPropertyName("TextConfidence")]
+    public double TextConfidence { get; set; }
+
+    [JsonPropertyName("Alternates")]
+    public List<Alternate> Alternates { get; set; }
+
+    public class Alternate
+    {
+        [JsonPropertyName("Text")]
+        public string Text { get; set; }
+
+        [JsonPropertyName("Confidence")]
+        public double Confidence { get; set; }
+    }
 }

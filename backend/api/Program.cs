@@ -34,15 +34,39 @@ public static class Startup
 
         var builder = WebApplication.CreateBuilder(args);
         
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("Not found");
+        if (string.IsNullOrEmpty(env))
+            throw new Exception("Must have ASPNETCORE_ENVIRONMENT");
+        
+        string connectionString;
+        
+        if (env is "Development" or "Test")
+        {
+            connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException();
+        }
+        else
+        {
+            connectionString = Environment.GetEnvironmentVariable("MYSQLCONN") ?? throw new InvalidOperationException(); 
+        }
+        
         // create our auth singletons
         builder.Services.AddSingleton<TokenService>(_ => new TokenService());
         builder.Services.AddSingleton<CredentialService>(_ => new CredentialService());
         
         // create our repository singletons
-        string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException();
-        builder.Services.AddSingleton<RepositoryManagement>(_ => new RepositoryManagement(connectionString));
-        builder.Services.AddSingleton<NoteRepository>(_ => new NoteRepository(connectionString));
-        builder.Services.AddSingleton<JournalistRepository>(_ => new JournalistRepository(connectionString));
+        
+        
+        try
+        {
+            builder.Services.AddSingleton<RepositoryManagement>(_ => new RepositoryManagement(connectionString));
+            builder.Services.AddSingleton<NoteRepository>(_ => new NoteRepository(connectionString));
+            builder.Services.AddSingleton<JournalistRepository>(_ => new JournalistRepository(connectionString));
+        }
+        catch (Exception e)
+        {
+            throw new RepositoryGeneralException("Error connecting to database on build");
+        }
+        
         var services = builder.FindAndInjectClientEventHandlers(Assembly.GetExecutingAssembly());
 
         
@@ -50,10 +74,8 @@ public static class Startup
         var app = builder.Build();
         var server = new WebSocketServer("ws://0.0.0.0:8181");
         
-        // Check environmental vars
-        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("Not found");
-        if (string.IsNullOrEmpty(env))
-            throw new Exception("Must have ASPNETCORE_ENVIRONMENT");
+       
+        
         
         // disable/enable text to speech
         var env1 = Environment.GetEnvironmentVariable("REGION");
@@ -69,8 +91,8 @@ public static class Startup
             Environment.SetEnvironmentVariable("NOTUSINGTTS", notUsingTts.ToString()); 
         }
         
-        // if the environment is development, call the rebuild method in RepositoryManagement
-        if (env == "Development")
+        // if the environment is testing or it is explicitly stated, call the rebuild method in RepositoryManagement
+        if (Environment.GetCommandLineArgs().Contains("--rebuild-db") || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test")
         {
             var repositoryManagement = app.Services.GetRequiredService<RepositoryManagement>();
             repositoryManagement.ExecuteRebuildDb();

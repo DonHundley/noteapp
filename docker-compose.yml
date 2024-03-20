@@ -11,10 +11,11 @@ services:
       db:
         condition: service_healthy
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - JWT=password
+      - ASPNETCORE_ENVIRONMENT=Production
+      - JWT=
       - TTSKEY=
       - REGION=
+      - MYSQLCONN=Server=db; port=3306; Database=db; Uid=user; Pwd=password;
 
   db:
     image: mysql:8.0.19
@@ -32,6 +33,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-     
+  angular:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
 volumes: 
   dbdata:
